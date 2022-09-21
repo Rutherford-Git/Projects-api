@@ -1,7 +1,7 @@
 // Write your "actions" router here!
 const express = require('express')
 const actionModel = require('./actions-model')
-const {validateActionID} = require('./actions-middlware')
+const {validateActionNotes, validateActiondescip, isActionCompleted} = require('./actions-middlware')
 
 const router = express.Router()
 
@@ -15,13 +15,15 @@ router.get('/', (req, res, next)=>{
     })
 })
 
-router.get('/:id', (req, res, next)=>{
-    const id = req.params.id
+router.get('/:id', async (req, res, next)=>{
+    const id = await actionModel.get(req.params.id) 
     if(!id){
-        res.status(404).json()
+        res.status(404).json({
+            message: 'id error'
+        })
     }else{
-        actionModel.get(id)
-    .then(act =>{
+        actionModel.get(req.params.id)
+        .then(act =>{
         res.json(act)
     })
     .catch(err=>{
@@ -30,17 +32,24 @@ router.get('/:id', (req, res, next)=>{
     }
 })
 
-router.post('/', (req, res, next)=>{
-    actionModel.insert(req.body)
-    .then(thing =>{
-        res.json(thing)
-    })
+router.post('/', validateActionNotes, validateActiondescip, (req, res, next)=>{
+    if(req.body){
+        actionModel.insert(req.body)
+        .then(thing =>{
+            res.json(thing)
+        })
+    }else{
+       next(res.status(400).json()) 
+    } 
 })
 
-router.put('/:id', (req, res, next)=>{
+router.put('/:id', validateActionNotes, validateActiondescip, isActionCompleted, (req, res, next)=>{
     actionModel.update(req.params.id, req.body)
     .then(thing =>{
         res.json(thing)
+    })
+    .catch(err=>{
+        next(err)
     })
 })
 
@@ -56,6 +65,14 @@ router.delete('/:id', async (req, res, next)=>{
     }
     
 })
+
+router.use((err, req, res, next) => {
+    res.status(err.status || 500).json({
+      customMessage: "something bad happened",
+      message: err.message,
+      stack: err.stack
+    })
+  })
 
 
 module.exports = router
