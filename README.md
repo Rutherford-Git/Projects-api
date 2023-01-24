@@ -11,7 +11,7 @@ This is an API that has Create, Read, Update and Delete (CRUD) functionality for
 
 #### NPM Scripts
 
-A _"test"_ script you can use to run tests against your code.
+A _"test"_ script you can use to run tests against the code.
 A _"resetdb"_ that allows you to reset the database to its original state.
 
 An _npm script_ named _"start"_ that uses `node` to run the API server.
